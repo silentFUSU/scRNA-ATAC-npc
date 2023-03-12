@@ -21,6 +21,7 @@ library(tidyr)
 
 npc <- readRDS("data/merge_data/scRNA/cluster_0.5/npc_cellcycle.rds")
 samples <- c("WT","24h","44h","46h","48h","50h","52h","54h","72h","D6")
+stage <- c("G1","S","G2M")
 for(i in 2:10){
   sample1 <- samples[i]
   sample2 <- samples[i-1]
@@ -34,7 +35,7 @@ for(i in 2:10){
     # 数据、映射、颜色
     marker, aes(x = avg_log2FC, y = -log10(p_val_adj))) +
     geom_point(aes(color = Significant), size=2) +
-    scale_color_manual(values = c("grey","red")) +
+    scale_color_manual(values = c("blue","grey","red")) +
     # 注释
     geom_text_repel(
       data = subset(marker, p_val_adj < 0.05 & abs(marker$avg_log2FC) >= 0.7),
@@ -64,8 +65,16 @@ for(i in 2:10){
                          pvalueCutoff = 0.05,#设定p值阈值
                          qvalueCutoff = 0.05,#设定q值阈值
                          readable = T)
-  dotplot(marker_GO)
-  ggsave(paste0("result/merge_data/Go_KEGG/",sample2,"_",sample1,"_GO_up.png"),width = 10,height = 5)
+  if(nrow(marker_GO) > 0){ 
+     dotplot(marker_GO)
+     ggsave(paste0("result/merge_data/Go_KEGG/",sample2,"_",sample1,"_",stage[j],"_GO_up.png"),width = 10,height = 5)
+     gene_list <- marker_GO@result
+     gene_list <- gene_list[1:10,]
+     gene_list<- separate(gene_list,geneID,paste0("gene",1:max(marker_GO$Count)),"/")
+     write.csv(gene_list,paste0("result/merge_data/Go_KEGG/",sample2,"_",sample1,"_",stage[j],"_GO_up.csv"))
+     }
+  
+  
   marker_gene <- bitr(marker$Gene[which(marker$avg_log2FC<0)],fromType = 'SYMBOL',toType = 'ENTREZID',OrgDb = GO_database)
   marker_GO <- enrichGO( marker_gene$ENTREZID,#GO富集分析
                          OrgDb = GO_database,
@@ -74,7 +83,13 @@ for(i in 2:10){
                          pvalueCutoff = 0.05,#设定p值阈值
                          qvalueCutoff = 0.05,#设定q值阈值
                          readable = T)
-  dotplot(marker_GO)
-  ggsave(paste0("result/merge_data/Go_KEGG/",sample2,"_",sample1,"_GO_down.png"),width = 10,height = 5)
+  if(nrow(marker_GO) > 0){ 
+     dotplot(marker_GO)
+     ggsave(paste0("result/merge_data/Go_KEGG/",sample2,"_",sample1,"_",stage[j],"_GO_down.png"),width = 10,height = 5)
+     gene_list <- marker_GO@result
+     gene_list <- gene_list[1:10,]
+     gene_list<- separate(gene_list,geneID,paste0("gene",1:max(marker_GO$Count)),"/")
+     write.csv(gene_list,paste0("result/merge_data/Go_KEGG/",sample2,"_",sample1,"_",stage[j],"_GO_down.csv"))
+     }
   }
 }
