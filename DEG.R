@@ -22,6 +22,7 @@ library(tidyr)
 npc <- readRDS("data/merge_data/scRNA/cluster_0.5/npc_cellcycle.rds")
 samples <- c("WT","24h","44h","46h","48h","50h","52h","54h","72h","D6")
 stage <- c("G1","S","G2M")
+GO_database <- 'org.Hs.eg.db'
 for(i in 2:10){
   sample1 <- samples[i]
   sample2 <- samples[i-1]
